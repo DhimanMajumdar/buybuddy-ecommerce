@@ -3,11 +3,14 @@ import { createClient } from '@/utils/supabase/server'
 
 async function getProducts() {
   try {
+    console.log('🔍 Fetching products...');
+    
     // Fetch FakeStore API products
     const fakeStoreRes = await fetch("https://fakestoreapi.com/products", {
       cache: "no-store",
     });
     const fakeStoreProducts = await fakeStoreRes.json();
+    console.log('✅ FakeStore products:', fakeStoreProducts.length);
 
     // Fetch custom products from Supabase
     try {
@@ -18,10 +21,12 @@ async function getProducts() {
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching custom products:', error);
+        console.error('❌ Error fetching custom products:', error);
         // Return only FakeStore products if Supabase fails
         return fakeStoreProducts;
       }
+
+      console.log('✅ Custom products:', customProducts?.length || 0);
 
       // Merge both product lists
       const allProducts = [
@@ -29,14 +34,15 @@ async function getProducts() {
         ...fakeStoreProducts
       ];
 
+      console.log('✅ Total products:', allProducts.length);
       return allProducts;
     } catch (supabaseError) {
-      console.error('Supabase error:', supabaseError);
+      console.error('❌ Supabase error:', supabaseError);
       // Return only FakeStore products if Supabase fails
       return fakeStoreProducts;
     }
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error('❌ Error fetching products:', error);
     // Return empty array if everything fails
     return [];
   }
