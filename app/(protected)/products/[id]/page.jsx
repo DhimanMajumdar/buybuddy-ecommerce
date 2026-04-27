@@ -8,29 +8,39 @@ async function getProduct(id) {
 
   if (isUUID) {
     // Fetch from Supabase (custom product)
-    const supabase = await createClient();
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .single();
+    try {
+      const supabase = await createClient();
+      const { data: product, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .single();
 
-    if (error || !product) {
+      if (error || !product) {
+        throw new Error("Product not found");
+      }
+
+      return product;
+    } catch (error) {
+      console.error('Error fetching custom product:', error);
       throw new Error("Product not found");
     }
-
-    return product;
   } else {
     // Fetch from FakeStore API
-    const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
-      cache: "no-store",
-    });
+    try {
+      const res = await fetch(`https://fakestoreapi.com/products/${id}`, {
+        cache: "no-store",
+      });
 
-    if (!res.ok) {
+      if (!res.ok) {
+        throw new Error("Failed to fetch product");
+      }
+
+      return res.json();
+    } catch (error) {
+      console.error('Error fetching FakeStore product:', error);
       throw new Error("Failed to fetch product");
     }
-
-    return res.json();
   }
 }
 
